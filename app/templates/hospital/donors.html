@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Donors - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">
+            <i class="fas fa-users me-2"></i>Blood Donors Management
+        </h2>
+        <a href="{{ url_for('hospital.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    {% if donations %}
+        <!-- Filter Tabs -->
+        <ul class="nav nav-tabs mb-4" id="donorTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    <i class="fas fa-clock me-2"></i>Pending Approvals
+                    <span class="badge bg-warning ms-2">{{ donations|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">
+                    <i class="fas fa-check me-2"></i>Approved
+                    <span class="badge bg-success ms-2">{{ donations|selectattr('status', 'equalto', 'approved')|list|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    <i class="fas fa-list me-2"></i>All Donations
+                    <span class="badge bg-primary ms-2">{{ donations|length }}</span>
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="donorTabsContent">
+            <!-- Pending Donations -->
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="row">
+                    {% for donation in donations %}
+                        {% if donation.status == 'pending' %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow-sm border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-user me-2"></i>{{ donation.donor.name }}
+                                            <span class="badge bg-dark ms-2">{{ donation.blood_group }}</span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Donation Date</small>
+                                                <p class="mb-2">{{ donation.donation_date.strftime('%b %d, %Y') }}</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Units</small>
+                                                <p class="mb-2"><strong>{{ donation.units_donated }}</strong></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Donor Age</small>
+                                                <p class="mb-2">{{ donation.donor.age }} years</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Registered On</small>
+                                                <p class="mb-2">{{ donation.created_at.strftime('%b %d') }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <small class="text-muted">Contact</small>
+                                            <p class="mb-0">{{ donation.donor.email }}</p>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ url_for('hospital.approve_donation', donation_id=donation.id) }}" 
+                                               class="btn btn-success btn-sm">
+                                                <i class="fas fa-check me-2"></i>Approve
+                                            </a>
+                                            <a href="{{ url_for('hospital.reject_donation', donation_id=donation.id) }}" 
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('Are you sure you want to reject this donation?')">
+                                                <i class="fas fa-times me-2"></i>Reject
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if donations|selectattr('status', 'equalto', 'pending')|list|length == 0 %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-muted">No pending donations</h5>
+                        <p class="text-muted">All donation requests have been processed.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Approved Donations -->
+            <div class="tab-pane fade" id="approved" role="tabpanel">
+                <div class="row">
+                    {% for donation in donations %}
+                        {% if donation.status == 'approved' %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow-sm border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-user me-2"></i>{{ donation.donor.name }}
+                                            <span class="badge bg-light text-dark ms-2">{{ donation.blood_group }}</span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Donation Date</small>
+                                                <p class="mb-2">{{ donation.donation_date.strftime('%b %d, %Y') }}</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Units Donated</small>
+                                                <p class="mb-2"><strong>{{ donation.units_donated }}</strong></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Certificate</small>
+                                                <p class="mb-2">
+                                                    {% if donation.certificate_generated %}
+                                                        <span class="badge bg-success">Generated</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">Pending</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Added to Inventory</small>
+                                                <p class="mb-2"><span class="badge bg-success">Yes</span></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-0">
+                                            <small class="text-muted">Contact</small>
+                                            <p class="mb-0">{{ donation.donor.email }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- All Donations -->
+            <div class="tab-pane fade" id="all" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Donor Name</th>
+                                <th>Blood Group</th>
+                                <th>Units</th>
+                                <th>Donation Date</th>
+                                <th>Status</th>
+                                <th>Certificate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for donation in donations %}
+                                <tr>
+                                    <td>{{ donation.donor.name }}</td>
+                                    <td><span class="badge bg-danger">{{ donation.blood_group }}</span></td>
+                                    <td><strong>{{ donation.units_donated }}</strong></td>
+                                    <td>{{ donation.donation_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if donation.status == 'approved' %}success{% elif donation.status == 'rejected' %}danger{% else %}warning{% endif %}">
+                                            {{ donation.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if donation.certificate_generated %}
+                                            <span class="badge bg-success">Generated</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Not Generated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if donation.status == 'pending' %}
+                                            <a href="{{ url_for('hospital.approve_donation', donation_id=donation.id) }}" 
+                                               class="btn btn-success btn-sm me-1">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <a href="{{ url_for('hospital.reject_donation', donation_id=donation.id) }}" 
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('Are you sure?')">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        {% else %}
+                                            <small class="text-muted">Processed</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No donors yet</h4>
+            <p class="text-muted">Donors will appear here when they schedule donations at your hospital.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Host Reports - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-info">
+            <i class="fas fa-chart-bar me-2"></i>Camp Reports & Analytics
+        </h2>
+        <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Camp Reports -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-campground me-2"></i>Camp Donor Reports
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if camps %}
+                        <p class="card-text">Generate detailed donor reports for each of your blood camps.</p>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Camp Name</th>
+                                        <th>Location</th>
+                                        <th>Dates</th>
+                                        <th>Total Donors</th>
+                                        <th>Approved Donations</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for camp in camps %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ camp.name }}</strong>
+                                            </td>
+                                            <td>
+                                                <small>{{ camp.city.name }}, {{ camp.state.name }}</small>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    {{ camp.start_date.strftime('%b %d') }} - 
+                                                    {{ camp.end_date.strftime('%b %d, %Y') }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ camp.donations|length }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success">
+                                                    {{ camp.donations|selectattr('status', 'equalto', 'approved')|list|length }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('host.download_report', camp_id=camp.id) }}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-download me-2"></i>Download Report
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-campground fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No camps available</h5>
+                            <p class="text-muted">Create blood camps to generate donor reports.</p>
+                            <a href="{{ url_for('host.manage_camps') }}" class="btn btn-info">
+                                <i class="fas fa-plus me-2"></i>Create First Camp
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Report Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">Camp Donor Reports Include:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Donor name and contact information</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Blood group and units donated</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Donation dates and registration dates</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Approval status and certificate generation</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Camp-specific donation statistics</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Report Features:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-info me-2"></i>CSV format for easy data analysis</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Filtered by individual camps</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Includes all donation statuses</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Ready for import into spreadsheets</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Comprehensive donor tracking</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Data Privacy Notice:</strong> These reports contain personal information of blood donors. 
+                        Please ensure compliance with data protection regulations and handle this information securely.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    {% if camps %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>Overall Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h3 class="text-info">{{ camps|length }}</h3>
+                                    <p class="mb-0">Total Camps</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h3 class="text-success">{{ camps|map(attribute='donations')|map('length')|sum }}</h3>
+                                    <p class="mb-0">Total Registrations</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border-end">
+                                    <h3 class="text-warning">{{ camps|selectattr('is_active', 'equalto', true)|list|length }}</h3>
+                                    <p class="mb-0">Active Camps</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <h3 class="text-primary">
+                                    {{ camps|map(attribute='donations')|map('selectattr', 'status', 'equalto', 'approved')|map('list')|map('length')|sum }}
+                                </h3>
+                                <p class="mb-0">Successful Donations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

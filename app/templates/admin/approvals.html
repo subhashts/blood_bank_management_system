@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Approvals - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-warning">
+            <i class="fas fa-check me-2"></i>Pending Approvals
+        </h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Approval Tabs -->
+    <ul class="nav nav-tabs mb-4" id="approvalTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="hospitals-tab" data-bs-toggle="tab" data-bs-target="#hospitals" type="button" role="tab">
+                <i class="fas fa-hospital me-2"></i>Hospitals
+                <span class="badge bg-warning ms-2">{{ pending_hospitals|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="hosts-tab" data-bs-toggle="tab" data-bs-target="#hosts" type="button" role="tab">
+                <i class="fas fa-campground me-2"></i>Camp Hosts
+                <span class="badge bg-warning ms-2">{{ pending_hosts|length }}</span>
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="approvalTabsContent">
+        <!-- Hospital Approvals -->
+        <div class="tab-pane fade show active" id="hospitals" role="tabpanel">
+            {% if pending_hospitals %}
+                <div class="row">
+                    {% for hospital in pending_hospitals %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow-sm border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-hospital me-2"></i>{{ hospital.hospital_name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-primary">Hospital Information</h6>
+                                            <p class="mb-1"><strong>Name:</strong> {{ hospital.hospital_name }}</p>
+                                            <p class="mb-1"><strong>License:</strong> {{ hospital.license_number }}</p>
+                                            <p class="mb-1"><strong>Address:</strong> {{ hospital.hospital_address }}</p>
+                                            <p class="mb-1"><strong>Contact:</strong> {{ hospital.hospital_contact }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-info">Admin Information</h6>
+                                            <p class="mb-1"><strong>Admin Name:</strong> {{ hospital.name }}</p>
+                                            <p class="mb-1"><strong>Email:</strong> {{ hospital.email }}</p>
+                                            <p class="mb-1"><strong>Age:</strong> {{ hospital.age }} years</p>
+                                            <p class="mb-1"><strong>Blood Group:</strong> 
+                                                <span class="badge bg-danger">{{ hospital.blood_group }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-secondary">Location</h6>
+                                            <p class="mb-1"><strong>State:</strong> {{ hospital.state.name }}</p>
+                                            <p class="mb-1"><strong>City:</strong> {{ hospital.city.name }}</p>
+                                            <p class="mb-1"><strong>Address:</strong> {{ hospital.address }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <small class="text-muted">
+                                                <strong>Registration Date:</strong> {{ hospital.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2 mt-3">
+                                        <a href="{{ url_for('admin.approve_user', user_id=hospital.id) }}" 
+                                           class="btn btn-success">
+                                            <i class="fas fa-check me-2"></i>Approve Hospital
+                                        </a>
+                                        <a href="{{ url_for('admin.reject_user', user_id=hospital.id) }}" 
+                                           class="btn btn-danger"
+                                           onclick="return confirm('Are you sure you want to reject this hospital application? This action cannot be undone.')">
+                                            <i class="fas fa-times me-2"></i>Reject
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-muted">No pending hospital approvals</h5>
+                    <p class="text-muted">All hospital applications have been processed.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Host Approvals -->
+        <div class="tab-pane fade" id="hosts" role="tabpanel">
+            {% if pending_hosts %}
+                <div class="row">
+                    {% for host in pending_hosts %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow-sm border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-campground me-2"></i>{{ host.camp_name }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-primary">Organization Information</h6>
+                                            <p class="mb-1"><strong>Name:</strong> {{ host.camp_name }}</p>
+                                            <p class="mb-1"><strong>Address:</strong> {{ host.camp_address }}</p>
+                                            <p class="mb-1"><strong>Contact:</strong> {{ host.camp_contact }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-info">Host Information</h6>
+                                            <p class="mb-1"><strong>Host Name:</strong> {{ host.name }}</p>
+                                            <p class="mb-1"><strong>Email:</strong> {{ host.email }}</p>
+                                            <p class="mb-1"><strong>Age:</strong> {{ host.age }} years</p>
+                                            <p class="mb-1"><strong>Blood Group:</strong> 
+                                                <span class="badge bg-danger">{{ host.blood_group }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <h6 class="text-secondary">Location</h6>
+                                            <p class="mb-1"><strong>State:</strong> {{ host.state.name }}</p>
+                                            <p class="mb-1"><strong>City:</strong> {{ host.city.name }}</p>
+                                            <p class="mb-1"><strong>Address:</strong> {{ host.address }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <small class="text-muted">
+                                                <strong>Registration Date:</strong> {{ host.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2 mt-3">
+                                        <a href="{{ url_for('admin.approve_user', user_id=host.id) }}" 
+                                           class="btn btn-success">
+                                            <i class="fas fa-check me-2"></i>Approve Host
+                                        </a>
+                                        <a href="{{ url_for('admin.reject_user', user_id=host.id) }}" 
+                                           class="btn btn-danger"
+                                           onclick="return confirm('Are you sure you want to reject this host application? This action cannot be undone.')">
+                                            <i class="fas fa-times me-2"></i>Reject
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-muted">No pending host approvals</h5>
+                    <p class="text-muted">All camp host applications have been processed.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Approval Guidelines -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Approval Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Hospital Approval Checklist:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Valid hospital name and license number</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Complete address and contact information</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Admin details are complete and valid</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Location information is accurate</li>
+                                <li><i class="fas fa-check text-success me-2"></i>No duplicate registrations</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Camp Host Approval Checklist:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-info me-2"></i>Valid organization/camp name</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Complete address and contact information</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Host details are complete and valid</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Location information is accurate</li>
+                                <li><i class="fas fa-check text-info me-2"></i>Legitimate organization credentials</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Approved hospitals and camp hosts will have access to manage blood inventory 
+                        and handle donor information. Please verify all details carefully before approval.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

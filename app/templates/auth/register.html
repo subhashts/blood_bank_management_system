@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="donationForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"> <!-- ✅ Fix here -->
+
+
+                        <!-- Role Selection -->
+                        <div class="mb-4">
+                            <label for="role" class="form-label fw-bold">I am a:</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="patient">Patient (Individual looking for blood or wanting to donate)</option>
+                                <option value="hospital">Hospital Admin (Managing hospital blood inventory)</option>
+                                <option value="host">Blood Camp Host (Organizing blood donation camps)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Common Fields -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="dob" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="dob" name="dob" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="age" name="age" min="18" max="65" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="blood_group" class="form-label">Blood Group</label>
+                                <select class="form-select" id="blood_group" name="blood_group" required>
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state_id" class="form-label">State</label>
+                                <select class="form-select" id="state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city_id" class="form-label">City</label>
+                                <select class="form-select" id="city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Hospital Specific Fields -->
+                        <div id="hospital-fields" class="d-none">
+                            <hr>
+                            <h5 class="text-danger mb-3">Hospital Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="hospital_name" class="form-label">Hospital Name</label>
+                                    <input type="text" class="form-control" id="hospital_name" name="hospital_name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="license_number" class="form-label">License Number</label>
+                                    <input type="text" class="form-control" id="license_number" name="license_number">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="hospital_address" class="form-label">Hospital Address</label>
+                                    <textarea class="form-control" id="hospital_address" name="hospital_address" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="hospital_contact" class="form-label">Contact Number</label>
+                                    <input type="tel" class="form-control" id="hospital_contact" name="hospital_contact">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Host Specific Fields -->
+                        <div id="host-fields" class="d-none">
+                            <hr>
+                            <h5 class="text-danger mb-3">Blood Camp Information</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="camp_name" class="form-label">Organization/Camp Name</label>
+                                    <input type="text" class="form-control" id="camp_name" name="camp_name">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="camp_contact" class="form-label">Contact Number</label>
+                                    <input type="tel" class="form-control" id="camp_contact" name="camp_contact">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="camp_address" class="form-label">Organization Address</label>
+                                <textarea class="form-control" id="camp_address" name="camp_address" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account?</p>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('role');
+    const hospitalFields = document.getElementById('hospital-fields');
+    const hostFields = document.getElementById('host-fields');
+    const stateSelect = document.getElementById('state_id');
+    const citySelect = document.getElementById('city_id');
+    const dobInput = document.getElementById('dob');
+    const ageInput = document.getElementById('age');
+    
+    // Show/hide role-specific fields
+    roleSelect.addEventListener('change', function() {
+        const role = this.value;
+        
+        // Hide all role-specific fields
+        hospitalFields.classList.add('d-none');
+        hostFields.classList.add('d-none');
+        
+        // Show relevant fields and make them required
+        if (role === 'hospital') {
+            hospitalFields.classList.remove('d-none');
+            document.getElementById('hospital_name').required = true;
+            document.getElementById('license_number').required = true;
+            document.getElementById('hospital_address').required = true;
+            document.getElementById('hospital_contact').required = true;
+        } else if (role === 'host') {
+            hostFields.classList.remove('d-none');
+            document.getElementById('camp_name').required = true;
+            document.getElementById('camp_contact').required = true;
+            document.getElementById('camp_address').required = true;
+        }
+    });
+    
+    // Load cities based on state selection
+    stateSelect.addEventListener('change', function() {
+        const stateId = this.value;
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        
+        if (stateId) {
+            fetch(`/api/cities/${stateId}`)
+                .then(response => response.json())
+                .then(cities => {
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        citySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading cities:', error));
+        }
+    });
+    
+    // Auto-calculate age from DOB
+    dobInput.addEventListener('change', function() {
+        const dob = new Date(this.value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        
+        ageInput.value = age;
+    });
+});
+</script>
+{% endblock %}

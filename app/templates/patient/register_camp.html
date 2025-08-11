@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Register for Blood Camp - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-campground me-2"></i>Register for Blood Camp
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Donor Info -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-user me-2"></i>Donor Information
+                        </h5>
+                        <p class="mb-1"><strong>Name:</strong> {{ current_user.name }}</p>
+                        <p class="mb-1"><strong>Blood Group:</strong> 
+                            <span class="badge bg-danger">{{ current_user.blood_group }}</span>
+                        </p>
+                        <p class="mb-0"><strong>Age:</strong> {{ current_user.age }} years</p>
+                    </div>
+                    
+                    <!-- Camp Benefits -->
+                    <div class="alert alert-success">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-star me-2"></i>Blood Camp Benefits
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Free health checkup</li>
+                            <li>Refreshments provided</li>
+                            <li>Digital donation certificate</li>
+                            <li>Community service recognition</li>
+                            <li>Professional medical supervision</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="POST" id="campForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state_id" class="form-label">State</label>
+                                <select class="form-select" id="state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city_id" class="form-label">City</label>
+                                <select class="form-select" id="city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="camp_id" class="form-label">Blood Camp</label>
+                                <select class="form-select" id="camp_id" name="camp_id" required>
+                                    <option value="">Select Camp</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="donation_date" class="form-label">Preferred Donation Date</label>
+                                <input type="date" class="form-control" id="donation_date" 
+                                       name="donation_date" required min="{{ today }}">
+                            </div>
+                        </div>
+                        
+                        <!-- Camp Details Display -->
+                        <div id="camp-details" class="alert alert-light d-none">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>Camp Details
+                            </h6>
+                            <div id="camp-info"></div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Your registration will be reviewed by the camp organizers. 
+                            You will receive confirmation and further instructions via email.
+                        </div>
+                        
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-info btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Register for Camp
+                            </button>
+                            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('donation_date').min = today;
+    
+    // Load cities when state changes
+    loadCities('state_id', 'city_id');
+    
+    // Load camps when city changes
+    const citySelect = document.getElementById('city_id');
+    const campSelect = document.getElementById('camp_id');
+    const campDetails = document.getElementById('camp-details');
+    const campInfo = document.getElementById('camp-info');
+    
+    citySelect.addEventListener('change', function() {
+        const stateId = document.getElementById('state_id').value;
+        const cityId = this.value;
+        
+        campSelect.innerHTML = '<option value="">Loading camps...</option>';
+        campDetails.classList.add('d-none');
+        
+        if (stateId && cityId) {
+            fetch(`/patient/api/camps/${stateId}/${cityId}`)
+                .then(response => response.json())
+                .then(data => {
+                    campSelect.innerHTML = '<option value="">Select Camp</option>';
+                    data.camps.forEach(camp => {
+                        const option = document.createElement('option');
+                        option.value = camp.id;
+                        option.textContent = camp.name;
+                        campSelect.appendChild(option);
+                    });
+                    
+                    if (data.camps.length === 0) {
+                        campSelect.innerHTML = '<option value="">No active camps found</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading camps:', error);
+                    campSelect.innerHTML = '<option value="">Error loading camps</option>';
+                });
+        } else {
+            campSelect.innerHTML = '<option value="">Select Camp</option>';
+        }
+    });
+    
+    // Show camp details when camp is selected
+    campSelect.addEventListener('change', function() {
+        if (this.value) {
+            // In a real implementation, you would fetch camp details
+            campDetails.classList.remove('d-none');
+            campInfo.innerHTML = `
+                <p><strong>Selected Camp:</strong> ${this.options[this.selectedIndex].text}</p>
+                <p><strong>Note:</strong> Camp details and schedule will be provided after registration.</p>
+            `;
+        } else {
+            campDetails.classList.add('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}

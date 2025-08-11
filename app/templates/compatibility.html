@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Blood Compatibility - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-danger">Blood Group Compatibility Guide</h1>
+        <p class="lead">Understanding blood compatibility is crucial for safe transfusions</p>
+    </div>
+    
+    <!-- Detailed Compatibility Chart -->
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="fas fa-table me-2"></i>Complete Compatibility Chart</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">Blood Group</th>
+                                    <th class="text-center">Can Donate To</th>
+                                    <th class="text-center">Can Receive From</th>
+                                    <th class="text-center">Population %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for blood_group, data in compatibility_data.items() %}
+                                <tr>
+                                    <td class="text-center fw-bold text-danger">{{ blood_group }}</td>
+                                    <td class="text-center">{{ data.can_donate_to | join(', ') }}</td>
+                                    <td class="text-center">{{ data.can_receive_from | join(', ') }}</td>
+                                    <td class="text-center">
+                                        {% if blood_group == 'O+' %}37%
+                                        {% elif blood_group == 'A+' %}36%
+                                        {% elif blood_group == 'B+' %}8%
+                                        {% elif blood_group == 'AB+' %}3%
+                                        {% elif blood_group == 'O-' %}7%
+                                        {% elif blood_group == 'A-' %}6%
+                                        {% elif blood_group == 'B-' %}2%
+                                        {% elif blood_group == 'AB-' %}1%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Universal Donors and Recipients -->
+    <div class="row mb-5">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-gift me-2"></i>Universal Donor</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <span class="badge bg-success fs-3">O-</span>
+                    </div>
+                    <p class="card-text">People with O- blood type are universal donors. Their blood can be given to anyone regardless of blood type.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Can donate to all blood types</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Most needed in emergencies</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Only 7% of population</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-hands-helping me-2"></i>Universal Recipient</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <span class="badge bg-primary fs-3">AB+</span>
+                    </div>
+                    <p class="card-text">People with AB+ blood type are universal recipients. They can receive blood from any blood type.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-primary me-2"></i>Can receive from all blood types</li>
+                        <li><i class="fas fa-check text-primary me-2"></i>Can only donate to AB+</li>
+                        <li><i class="fas fa-check text-primary me-2"></i>Only 3% of population</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Important Facts -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Important Facts</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Rh Factor (+ or -)</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-info-circle text-info me-2"></i>Rh+ can receive Rh+ or Rh-</li>
+                                <li><i class="fas fa-info-circle text-info me-2"></i>Rh- can only receive Rh-</li>
+                                <li><i class="fas fa-info-circle text-info me-2"></i>85% of people are Rh+</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Emergency Situations</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-ambulance text-danger me-2"></i>O- used in emergencies</li>
+                                <li><i class="fas fa-clock text-warning me-2"></i>Type & cross-match takes time</li>
+                                <li><i class="fas fa-heartbeat text-success me-2"></i>Every second counts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Donation Guidelines -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Blood Donation Guidelines</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">Eligibility Criteria</h6>
+                            <ul>
+                                <li>Age: 18-65 years</li>
+                                <li>Weight: Minimum 50 kg</li>
+                                <li>Hemoglobin: Minimum 12.5 g/dL</li>
+                                <li>Good general health</li>
+                                <li>No recent illness or medication</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Donation Frequency</h6>
+                            <ul>
+                                <li>Whole blood: Every 56 days</li>
+                                <li>Platelets: Every 7 days (up to 24 times/year)</li>
+                                <li>Plasma: Every 28 days</li>
+                                <li>Double red cells: Every 112 days</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('main.home') }}" class="btn btn-danger btn-lg">
+                            <i class="fas fa-heart me-2"></i>Find Donation Centers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

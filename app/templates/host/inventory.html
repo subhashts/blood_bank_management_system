@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Camp Inventory - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-boxes me-2"></i>{{ camp.name }} - Inventory
+        </h2>
+        <a href="{{ url_for('host.manage_camps') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Camps
+        </a>
+    </div>
+    
+    <!-- Camp Info -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-info">Camp Details</h6>
+                            <p class="mb-1"><strong>Name:</strong> {{ camp.name }}</p>
+                            <p class="mb-1"><strong>Location:</strong> {{ camp.address }}</p>
+                            <p class="mb-0"><strong>Dates:</strong> {{ camp.start_date.strftime('%b %d') }} - {{ camp.end_date.strftime('%b %d, %Y') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-info">Contact Information</h6>
+                            <p class="mb-1"><strong>Phone:</strong> {{ camp.contact_number }}</p>
+                            <p class="mb-0"><strong>City:</strong> {{ camp.city.name }}, {{ camp.state.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Blood Units Form -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Add Blood Units</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="action" value="add">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="blood_group" class="form-label">Blood Group</label>
+                                <select class="form-select" id="blood_group" name="blood_group" required>
+                                    <option value="">Select Blood Group</option>
+                                    {% for bg in blood_groups %}
+                                        <option value="{{ bg }}">{{ bg }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="units" class="form-label">Units to Add</label>
+                                <input type="number" class="form-control" id="units" name="units" 
+                                       min="1" max="100" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add Units
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Summary -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Inventory Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if inventory %}
+                        <div class="row">
+                            {% for inv in inventory %}
+                                <div class="col-6 col-md-4 mb-2 text-center">
+                                    <div class="border rounded p-2 {% if inv.units_available < 5 %}border-danger{% elif inv.units_available < 10 %}border-warning{% else %}border-success{% endif %}">
+                                        <h6 class="text-danger mb-1">{{ inv.blood_group }}</h6>
+                                        <p class="mb-0">{{ inv.units_available }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <span class="badge bg-danger me-2"></span>Critical (&lt;5)
+                                <span class="badge bg-warning me-2"></span>Low (&lt;10)
+                                <span class="badge bg-success me-2"></span>Good (≥10)
+                            </small>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No inventory data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Current Inventory Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Current Inventory</h5>
+        </div>
+        <div class="card-body">
+            {% if inventory %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Blood Group</th>
+                                <th>Units Available</th>
+                                <th>Last Updated</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inv in inventory %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-danger">{{ inv.blood_group }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ inv.units_available }}</strong>
+                                    </td>
+                                    <td>{{ inv.last_updated.strftime('%b %d, %Y at %I:%M %p') }}</td>
+                                    <td>
+                                        {% if inv.units_available < 5 %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% elif inv.units_available < 10 %}
+                                            <span class="badge bg-warning">Low</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Good</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- Update Form -->
+                                        <form method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="update">
+                                            <input type="hidden" name="inventory_id" value="{{ inv.id }}">
+                                            <div class="input-group input-group-sm" style="width: 120px;">
+                                                <input type="number" class="form-control" name="new_units" 
+                                                       value="{{ inv.units_available }}" min="0" max="1000">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No inventory available</h5>
+                    <p class="text-muted">Start by adding blood units collected from your camp.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

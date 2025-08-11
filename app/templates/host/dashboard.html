@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Host Dashboard - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container pt-0 pb-4">
+
+    <!-- Welcome Header -->
+    <div class="row mb-4 mt-3">
+        <div class="col-12">
+            <div class="card bg-gradient-danger text-white shadow-sm border-0">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">
+                            <i class="fas fa-campground me-2"></i>Welcome, {{ current_user.name }}
+                        </h2>
+                        <p class="mb-0">
+                            Role: <span class="badge bg-light text-dark">{{ current_user.role|capitalize }}</span>
+                        </p>
+                        {% if current_user.city and current_user.city.name %}
+                            <p class="mb-0">
+                                City: <span class="badge bg-light text-dark">{{ current_user.city.name }}</span>
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <small class="d-block">Member since</small>
+                        <strong>{{ current_user.created_at.strftime('%b %d, %Y') if current_user.created_at else '' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-campground fa-2x text-info mb-2"></i>
+                    <h4 class="text-info">{{ active_camps }}</h4>
+                    <p class="mb-0">Active Camps</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                    <h4 class="text-warning">{{ pending_donations }}</h4>
+                    <p class="mb-0">Pending Donations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <h4 class="text-success">{{ recent_camps|map(attribute='donations')|map('length')|sum }}</h4>
+                    <p class="mb-0">Total Registrations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-heart fa-2x text-primary mb-2"></i>
+                    <h4 class="text-primary">{{ recent_camps|length }}</h4>
+                    <p class="mb-0">Total Camps Hosted</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row justify-content-center g-3">
+                        <div class="col-lg-3 col-md-3 col-sm-6">
+                            <a href="{{ url_for('host.manage_camps') }}" class="btn btn-outline-info w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3">
+                                <i class="fas fa-campground fa-2x mb-2"></i>
+                                <span>Manage Camps</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6">
+                            <a href="{{ url_for('host.view_donors') }}" class="btn btn-outline-success w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <span>View Donors</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6">
+                            <a href="{{ url_for('host.reports') }}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3">
+                                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                                <span>Reports</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-6">
+                            <a href="{{ url_for('host.manage_camps') }}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column justify-content-center align-items-center p-3">
+                                <i class="fas fa-plus fa-2x mb-2"></i>
+                                <span>Create New Camp</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Camps -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Blood Camps</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_camps %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Camp Name</th>
+                                        <th>Location</th>
+                                        <th>Dates</th>
+                                        <th>Status</th>
+                                        <th>Registrations</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for camp in recent_camps %}
+                                        <tr>
+                                            <td><strong>{{ camp.name }}</strong></td>
+                                            <td><small>{{ camp.city.name }}, {{ camp.state.name }}</small></td>
+                                            <td><small>{{ camp.start_date.strftime('%b %d') }} - {{ camp.end_date.strftime('%b %d, %Y') }}</small></td>
+                                            <td>
+                                                {% set today = today %}
+                                                {% if camp.is_active and camp.start_date <= today <= camp.end_date %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% elif camp.start_date > today %}
+                                                    <span class="badge bg-info">Upcoming</span>
+                                                {% elif camp.end_date < today %}
+                                                    <span class="badge bg-secondary">Completed</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td><span class="badge bg-primary">{{ camp.donations|length }}</span></td>
+                                            <td>
+                                                <a href="{{ url_for('host.manage_inventory', camp_id=camp.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-boxes"></i>
+                                                </a>
+                                                <a href="{{ url_for('host.download_report', camp_id=camp.id) }}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-campground fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No camps hosted yet</h5>
+                            <p class="text-muted">Start by creating your first blood donation camp.</p>
+                            <a href="{{ url_for('host.manage_camps') }}" class="btn btn-danger btn-lg">
+                                <i class="fas fa-plus me-2"></i>Create First Camp
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

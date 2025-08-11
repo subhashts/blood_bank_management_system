@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Camps - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-info">
+            <i class="fas fa-campground me-2"></i>Blood Camps Management
+        </h2>
+        <div>
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#createCampModal">
+                <i class="fas fa-plus me-2"></i>Create New Camp
+            </button>
+            <a href="{{ url_for('host.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Create Camp Modal -->
+    <div class="modal fade" id="createCampModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Create New Blood Camp</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="action" value="create">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Camp Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contact_number" class="form-label">Contact Number</label>
+                                <input type="tel" class="form-control" id="contact_number" name="contact_number" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Camp Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state_id" class="form-label">State</label>
+                                <select class="form-select" id="state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city_id" class="form-label">City</label>
+                                <select class="form-select" id="city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info">Create Camp</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Camps List -->
+    {% if camps %}
+        <div class="row">
+            {% for camp in camps %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-campground me-2"></i>{{ camp.name }}
+                            </h6>
+                            {% set today = today %}
+                            {% if camp.is_active and camp.start_date <= today <= camp.end_date %}
+                                <span class="badge bg-success">Active</span>
+                            {% elif camp.start_date > today %}
+                                <span class="badge bg-info">Upcoming</span>
+                            {% elif camp.end_date < today %}
+                                <span class="badge bg-secondary">Completed</span>
+                            {% else %}
+                                <span class="badge bg-warning">Inactive</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <small class="text-muted">Location</small>
+                                    <p class="mb-1">{{ camp.address }}</p>
+                                    <small class="text-muted">{{ camp.city.name }}, {{ camp.state.name }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Start Date</small>
+                                    <p class="mb-2">{{ camp.start_date.strftime('%b %d, %Y') }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">End Date</small>
+                                    <p class="mb-2">{{ camp.end_date.strftime('%b %d, %Y') }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Contact</small>
+                                    <p class="mb-2">{{ camp.contact_number }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Registrations</small>
+                                    <p class="mb-2">
+                                        <span class="badge bg-primary">{{ camp.donations|length }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ url_for('host.manage_inventory', camp_id=camp.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-boxes me-1"></i>Inventory
+                                </a>
+                                <a href="{{ url_for('host.download_report', camp_id=camp.id) }}" 
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-download me-1"></i>Report
+                                </a>
+                                <button type="button" class="btn btn-outline-warning btn-sm" 
+                                        data-bs-toggle="modal" data-bs-target="#editModal{{ camp.id }}">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </button>
+                                {% if camp.is_active %}
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="action" value="deactivate">
+                                        <input type="hidden" name="camp_id" value="{{ camp.id }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                onclick="return confirm('Are you sure you want to deactivate this camp?')">
+                                            <i class="fas fa-stop me-1"></i>Deactivate
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Edit Camp Modal -->
+                <div class="modal fade" id="editModal{{ camp.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title">Edit Camp: {{ camp.name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="update">
+                                <input type="hidden" name="camp_id" value="{{ camp.id }}">
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_name{{ camp.id }}" class="form-label">Camp Name</label>
+                                            <input type="text" class="form-control" id="edit_name{{ camp.id }}" 
+                                                   name="name" value="{{ camp.name }}" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_contact{{ camp.id }}" class="form-label">Contact Number</label>
+                                            <input type="tel" class="form-control" id="edit_contact{{ camp.id }}" 
+                                                   name="contact_number" value="{{ camp.contact_number }}" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="edit_address{{ camp.id }}" class="form-label">Camp Address</label>
+                                        <textarea class="form-control" id="edit_address{{ camp.id }}" 
+                                                  name="address" rows="2" required>{{ camp.address }}</textarea>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_state{{ camp.id }}" class="form-label">State</label>
+                                            <select class="form-select" id="edit_state{{ camp.id }}" name="state_id" required>
+                                                {% for state in states %}
+                                                    <option value="{{ state.id }}" 
+                                                            {% if state.id == camp.state_id %}selected{% endif %}>
+                                                        {{ state.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_city{{ camp.id }}" class="form-label">City</label>
+                                            <select class="form-select" id="edit_city{{ camp.id }}" name="city_id" required>
+                                                <option value="{{ camp.city_id }}" selected>{{ camp.city.name }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_start{{ camp.id }}" class="form-label">Start Date</label>
+                                            <input type="date" class="form-control" id="edit_start{{ camp.id }}" 
+                                                   name="start_date" value="{{ camp.start_date.strftime('%Y-%m-%d') }}" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_end{{ camp.id }}" class="form-label">End Date</label>
+                                            <input type="date" class="form-control" id="edit_end{{ camp.id }}" 
+                                                   name="end_date" value="{{ camp.end_date.strftime('%Y-%m-%d') }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-warning">Update Camp</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-campground fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No camps created yet</h4>
+            <p class="text-muted">Start by creating your first blood donation camp.</p>
+            <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#createCampModal">
+                <i class="fas fa-plus me-2"></i>Create First Camp
+            </button>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum dates to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('start_date').min = today;
+    document.getElementById('end_date').min = today;
+    
+    // Load cities for create form
+    loadCities('state_id', 'city_id');
+    
+    // Handle date validation
+    document.getElementById('start_date').addEventListener('change', function() {
+        document.getElementById('end_date').min = this.value;
+    });
+    
+    // Load cities for edit forms
+    {% for camp in camps %}
+        loadCities('edit_state{{ camp.id }}', 'edit_city{{ camp.id }}');
+    {% endfor %}
+});
+</script>
+{% endblock %}

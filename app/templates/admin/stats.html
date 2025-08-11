@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}System Statistics - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-info">
+            <i class="fas fa-chart-bar me-2"></i>System Statistics
+        </h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- User Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>User Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h3 class="text-success">{{ user_stats.patients }}</h3>
+                                <p class="mb-0">Patients</p>
+                                <small class="text-muted">Individual users</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h3 class="text-info">{{ user_stats.hospitals }}</h3>
+                                <p class="mb-0">Hospitals</p>
+                                <small class="text-muted">Approved facilities</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-end">
+                                <h3 class="text-warning">{{ user_stats.hosts }}</h3>
+                                <p class="mb-0">Camp Hosts</p>
+                                <small class="text-muted">Approved organizers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-primary">{{ user_stats.admins }}</h3>
+                            <p class="mb-0">Administrators</p>
+                            <small class="text-muted">System admins</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Blood Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Blood Donation Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ blood_stats.total_donations }}</h4>
+                            <p class="mb-2">Total Donations</p>
+                            <small class="text-muted">Successfully completed</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-warning">{{ blood_stats.pending_donations }}</h4>
+                            <p class="mb-2">Pending Donations</p>
+                            <small class="text-muted">Awaiting approval</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="progress">
+                            {% set total = blood_stats.total_donations + blood_stats.pending_donations %}
+                            {% if total > 0 %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ (blood_stats.total_donations / total * 100)|round(1) }}%">
+                                    {{ (blood_stats.total_donations / total * 100)|round(1) }}% Approved
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Blood Request Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ blood_stats.total_requests }}</h4>
+                            <p class="mb-2">Total Requests</p>
+                            <small class="text-muted">All requests</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ blood_stats.approved_requests }}</h4>
+                            <p class="mb-2">Approved</p>
+                            <small class="text-muted">Successfully fulfilled</small>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">{{ blood_stats.pending_requests }}</h4>
+                            <p class="mb-2">Pending</p>
+                            <small class="text-muted">Under review</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="progress">
+                            {% if blood_stats.total_requests > 0 %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ (blood_stats.approved_requests / blood_stats.total_requests * 100)|round(1) }}%">
+                                    {{ (blood_stats.approved_requests / blood_stats.total_requests * 100)|round(1) }}% Approved
+                                </div>
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ (blood_stats.pending_requests / blood_stats.total_requests * 100)|round(1) }}%">
+                                    {{ (blood_stats.pending_requests / blood_stats.total_requests * 100)|round(1) }}% Pending
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Camp Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-campground me-2"></i>Blood Camp Statistics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <div class="border-end">
+                                <h3 class="text-info">{{ camp_stats.active_camps }}</h3>
+                                <p class="mb-0">Active Camps</p>
+                                <small class="text-muted">Currently running</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="text-primary">{{ camp_stats.total_camps }}</h3>
+                            <p class="mb-0">Total Camps</p>
+                            <small class="text-muted">All time</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Health -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>System Health Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-success">Active Components</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>User Registration System</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Blood Inventory Management</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Donation Tracking</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Request Processing</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Camp Management</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-info">System Metrics</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-users text-info me-2"></i>{{ user_stats.patients + user_stats.hospitals + user_stats.hosts + user_stats.admins }} Total Users</li>
+                                <li><i class="fas fa-heart text-info me-2"></i>{{ blood_stats.total_donations }} Total Donations</li>
+                                <li><i class="fas fa-list text-info me-2"></i>{{ blood_stats.total_requests }} Total Requests</li>
+                                <li><i class="fas fa-campground text-info me-2"></i>{{ camp_stats.total_camps }} Total Camps</li>
+                                <li><i class="fas fa-certificate text-info me-2"></i>Certificate Generation Active</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-warning">Key Performance Indicators</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-percentage text-warning me-2"></i>
+                                    {% if blood_stats.total_requests > 0 %}
+                                        {{ (blood_stats.approved_requests / blood_stats.total_requests * 100)|round(1) }}% Request Approval Rate
+                                    {% else %}
+                                        0% Request Approval Rate
+                                    {% endif %}
+                                </li>
+                                <li><i class="fas fa-percentage text-warning me-2"></i>
+                                    {% set total_donations = blood_stats.total_donations + blood_stats.pending_donations %}
+                                    {% if total_donations > 0 %}
+                                        {{ (blood_stats.total_donations / total_donations * 100)|round(1) }}% Donation Success Rate
+                                    {% else %}
+                                        0% Donation Success Rate
+                                    {% endif %}
+                                </li>
+                                <li><i class="fas fa-percentage text-warning me-2"></i>
+                                    {% if camp_stats.total_camps > 0 %}
+                                        {{ (camp_stats.active_camps / camp_stats.total_camps * 100)|round(1) }}% Active Camps
+                                    {% else %}
+                                        0% Active Camps
+                                    {% endif %}
+                                </li>
+                                <li><i class="fas fa-users text-warning me-2"></i>{{ user_stats.hospitals }} Active Hospitals</li>
+                                <li><i class="fas fa-campground text-warning me-2"></i>{{ user_stats.hosts }} Active Hosts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Donate Blood - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-heart me-2"></i>Schedule Blood Donation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Donor Info -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-user me-2"></i>Donor Information
+                        </h5>
+                        <p class="mb-1"><strong>Name:</strong> {{ current_user.name }}</p>
+                        <p class="mb-1"><strong>Blood Group:</strong> 
+                            <span class="badge bg-danger">{{ current_user.blood_group }}</span>
+                        </p>
+                        <p class="mb-0"><strong>Age:</strong> {{ current_user.age }} years</p>
+                    </div>
+                    
+                    <!-- Donation Guidelines -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-clipboard-list me-2"></i>Donation Guidelines
+                        </h6>
+                        <ul class="mb-0">
+                            <li>You must be in good health</li>
+                            <li>Minimum 56 days gap between donations</li>
+                            <li>Have a light meal before donation</li>
+                            <li>Bring a valid ID proof</li>
+                            <li>Stay hydrated before and after donation</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="POST" id="donationForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state_id" class="form-label">State</label>
+                                <select class="form-select" id="state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city_id" class="form-label">City</label>
+                                <select class="form-select" id="city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="hospital_id" class="form-label">Hospital</label>
+                                <select class="form-select" id="hospital_id" name="hospital_id" required>
+                                    <option value="">Select Hospital</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="donation_date" class="form-label">Preferred Donation Date</label>
+                                <input type="date" class="form-control" id="donation_date" 
+                                       name="donation_date" required min="{{ today }}">
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success">
+                            <i class="fas fa-certificate me-2"></i>
+                            <strong>Certificate:</strong> You will receive a digital donation certificate 
+                            after your donation is approved by the hospital.
+                        </div>
+                        
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-heart me-2"></i>Schedule Donation
+                            </button>
+                            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('donation_date').min = today;
+    
+    // Load cities when state changes
+    loadCities('state_id', 'city_id');
+    
+    // Load hospitals when city changes
+    const citySelect = document.getElementById('city_id');
+    const hospitalSelect = document.getElementById('hospital_id');
+    
+    citySelect.addEventListener('change', function() {
+        const stateId = document.getElementById('state_id').value;
+        const cityId = this.value;
+        
+        hospitalSelect.innerHTML = '<option value="">Loading hospitals...</option>';
+        
+        if (stateId && cityId) {
+            fetch(`/patient/api/hospitals/${stateId}/${cityId}`)
+                .then(response => response.json())
+                .then(data => {
+                    hospitalSelect.innerHTML = '<option value="">Select Hospital</option>';
+                    data.hospitals.forEach(hospital => {
+                        const option = document.createElement('option');
+                        option.value = hospital.id;
+                        option.textContent = hospital.name;
+                        hospitalSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading hospitals:', error);
+                    hospitalSelect.innerHTML = '<option value="">Error loading hospitals</option>';
+                });
+        } else {
+            hospitalSelect.innerHTML = '<option value="">Select Hospital</option>';
+        }
+    });
+});
+</script>
+{% endblock %}

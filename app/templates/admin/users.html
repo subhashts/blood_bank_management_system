@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-users me-2"></i>User Management
+        </h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- User Filter Tabs -->
+    <ul class="nav nav-tabs mb-4" id="userTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                <i class="fas fa-users me-2"></i>All Users
+                <span class="badge bg-primary ms-2">{{ users|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="patients-tab" data-bs-toggle="tab" data-bs-target="#patients" type="button" role="tab">
+                <i class="fas fa-user me-2"></i>Patients
+                <span class="badge bg-success ms-2">{{ users|selectattr('role', 'equalto', 'patient')|list|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="hospitals-tab" data-bs-toggle="tab" data-bs-target="#hospitals" type="button" role="tab">
+                <i class="fas fa-hospital me-2"></i>Hospitals
+                <span class="badge bg-info ms-2">{{ users|selectattr('role', 'equalto', 'hospital')|list|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="hosts-tab" data-bs-toggle="tab" data-bs-target="#hosts" type="button" role="tab">
+                <i class="fas fa-campground me-2"></i>Hosts
+                <span class="badge bg-warning ms-2">{{ users|selectattr('role', 'equalto', 'host')|list|length }}</span>
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="userTabsContent">
+        <!-- All Users -->
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">All System Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Blood Group</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.name }}</strong>
+                                            {% if user.role == 'hospital' and user.hospital_name %}
+                                                <br><small class="text-muted">{{ user.hospital_name }}</small>
+                                            {% elif user.role == 'host' and user.camp_name %}
+                                                <br><small class="text-muted">{{ user.camp_name }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if user.role == 'patient' %}success{% elif user.role == 'hospital' %}info{% elif user.role == 'host' %}warning{% else %}primary{% endif %}">
+                                                {{ user.role.title() }}
+                                            </span>
+                                        </td>
+                                        <td><span class="badge bg-danger">{{ user.blood_group }}</span></td>
+                                        <td>
+                                            <small>{{ user.city.name }}, {{ user.state.name }}</small>
+                                        </td>
+                                        <td>
+                                            {% if user.role in ['hospital', 'host'] %}
+                                                {% if user.is_approved %}
+                                                    <span class="badge bg-success">Approved</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ user.created_at.strftime('%b %d, %Y') }}</small>
+                                        </td>
+                                        <td>
+                                            {% if user.role in ['hospital', 'host'] %}
+                                                {% if user.is_approved %}
+                                                    <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
+                                                       class="btn btn-outline-warning btn-sm"
+                                                       onclick="return confirm('Deactivate this {{ user.role }}?')">
+                                                        <i class="fas fa-pause"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" 
+                                                       class="btn btn-outline-success btn-sm">
+                                                        <i class="fas fa-play"></i>
+                                                    </a>
+                                                {% endif %}
+                                            {% else %}
+                                                <small class="text-muted">No actions</small>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Patients -->
+        <div class="tab-pane fade" id="patients" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Patient Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user in users %}
+                            {% if user.role == 'patient' %}
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ user.name }}</h6>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ user.email }}<br>
+                                                    <i class="fas fa-tint me-1"></i>{{ user.blood_group }} | 
+                                                    <i class="fas fa-birthday-cake me-1"></i>{{ user.age }} years<br>
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ user.city.name }}, {{ user.state.name }}<br>
+                                                    <i class="fas fa-calendar me-1"></i>Joined {{ user.created_at.strftime('%b %Y') }}
+                                                </small>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hospitals -->
+        <div class="tab-pane fade" id="hospitals" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Hospital Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user in users %}
+                            {% if user.role == 'hospital' %}
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card border-info">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{ user.hospital_name }}</h6>
+                                            <span class="badge bg-{% if user.is_approved %}success{% else %}warning{% endif %}">
+                                                {{ 'Approved' if user.is_approved else 'Pending' }}
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                                <strong>Admin:</strong> {{ user.name }}<br>
+                                                <strong>License:</strong> {{ user.license_number }}<br>
+                                                <strong>Contact:</strong> {{ user.hospital_contact }}<br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ user.email }}<br>
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ user.city.name }}, {{ user.state.name }}<br>
+                                                    <i class="fas fa-calendar me-1"></i>Joined {{ user.created_at.strftime('%b %Y') }}
+                                                </small>
+                                            </p>
+                                            
+                                            {% if user.is_approved %}
+                                                <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
+                                                   class="btn btn-outline-warning btn-sm"
+                                                   onclick="return confirm('Deactivate this hospital?')">
+                                                    <i class="fas fa-pause me-1"></i>Deactivate
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-play me-1"></i>Activate
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hosts -->
+        <div class="tab-pane fade" id="hosts" role="tabpanel">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Camp Host Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user in users %}
+                            {% if user.role == 'host' %}
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">{{ user.camp_name }}</h6>
+                                            <span class="badge bg-{% if user.is_approved %}success{% else %}warning{% endif %}">
+                                                {{ 'Approved' if user.is_approved else 'Pending' }}
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                                <strong>Host:</strong> {{ user.name }}<br>
+                                                <strong>Contact:</strong> {{ user.camp_contact }}<br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-envelope me-1"></i>{{ user.email }}<br>
+                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ user.city.name }}, {{ user.state.name }}<br>
+                                                    <i class="fas fa-calendar me-1"></i>Joined {{ user.created_at.strftime('%b %Y') }}
+                                                </small>
+                                            </p>
+                                            
+                                            {% if user.is_approved %}
+                                                <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" 
+                                                   class="btn btn-outline-warning btn-sm"
+                                                   onclick="return confirm('Deactivate this host?')">
+                                                    <i class="fas fa-pause me-1"></i>Deactivate
+                                                </a>
+                                            {% else %}
+                                                <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" 
+                                                   class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-play me-1"></i>Activate
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}System Statistics - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>System Statistics</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h4 class="text-primary">{{ total_users }}</h4>
+                    <p class="mb-0">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-heart fa-2x text-success mb-2"></i>
+                    <h4 class="text-success">{{ total_donations }}</h4>
+                    <p class="mb-0">Successful Donations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-list fa-2x text-warning mb-2"></i>
+                    <h4 class="text-warning">{{ total_requests }}</h4>
+                    <p class="mb-0">Blood Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-campground fa-2x text-info mb-2"></i>
+                    <h4 class="text-info">{{ total_blood_units }}</h4>
+                    <p class="mb-0">Total Blood Units</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

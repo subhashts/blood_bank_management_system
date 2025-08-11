@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}My Blood Requests - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-0">
+                <i class="fas fa-list me-2"></i>My Blood Requests
+            </h2>
+            <p class="text-muted mb-0">View and track your blood requests and donations.</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{{ url_for('main.search_blood') }}" class="btn btn-outline-danger">
+                <i class="fas fa-search me-1"></i> Search Blood
+            </a>
+            <a href="{{ url_for('patient.donate_blood') }}" class="btn btn-outline-success">
+                <i class="fas fa-heart me-1"></i> Donate Blood
+            </a>
+        </div>
+    </div>
+
+    <!-- Requests List -->
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Your Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if requests %}
+                <div class="list-group list-group-flush">
+                    {% for request in requests %}
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold">
+                                    <i class="fas fa-plus text-danger me-2"></i>Blood Request
+                                </div>
+                                <p class="mb-1"><strong>Blood Group:</strong> {{ request.blood_group }}</p>
+                                <p class="mb-1"><strong>Units Requested:</strong> {{ request.units_requested }}</p>
+                                <p class="mb-1"><strong>Status:</strong> {{ request.status }}</p>
+                                <p class="mb-1"><strong>Hospital:</strong> {{ request.hospital.hospital_name }}</p>
+                                <p class="mb-1"><strong>Request Date:</strong> {{ request.request_date.strftime('%b %d, %Y') }}</p>
+                            </div>
+                            <small class="text-muted">{{ request.request_date.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No requests or donations found</h5>
+                    <p class="text-muted">Start by searching for blood or scheduling a donation.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

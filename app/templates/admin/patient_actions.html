@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Actions - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">
+            <i class="fas fa-user-md me-2"></i>Patient Actions (Admin Mode)
+        </h2>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Admin Notice -->
+    <div class="alert alert-info">
+        <h5 class="alert-heading">
+            <i class="fas fa-info-circle me-2"></i>Admin Patient Actions
+        </h5>
+        <p class="mb-0">
+            As an administrator, you can perform all patient actions on behalf of users. 
+            This includes searching for blood, making requests, scheduling donations, and registering for camps.
+        </p>
+    </div>
+    
+    <!-- Patient Action Cards -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-danger">
+                        <i class="fas fa-search me-2"></i>Search for Blood
+                    </h3>
+                    <p class="card-text">Find hospitals with available blood units in any location across the system.</p>
+                    
+                    <form action="{{ url_for('admin.search_blood') }}" method="GET">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state_id" class="form-label">State</label>
+                                <select class="form-select" id="state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city_id" class="form-label">City</label>
+                                <select class="form-select" id="city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="blood_group" class="form-label">Blood Group (Optional)</label>
+                            <select class="form-select" id="blood_group" name="blood_group">
+                                <option value="">All Blood Groups</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-search me-2"></i>Search Blood
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-success">
+                        <i class="fas fa-heart me-2"></i>Schedule Blood Donation
+                    </h3>
+                    <p class="card-text">Schedule blood donations at hospitals on behalf of donors.</p>
+                    
+                    <form action="{{ url_for('admin.donate_blood') }}" method="GET">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="donate_state_id" class="form-label">State</label>
+                                <select class="form-select" id="donate_state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="donate_city_id" class="form-label">City</label>
+                                <select class="form-select" id="donate_city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-heart me-2"></i>Schedule Donation
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-info">
+                        <i class="fas fa-campground me-2"></i>Register for Blood Camp
+                    </h3>
+                    <p class="card-text">Register donors for active blood donation camps.</p>
+                    
+                    <form action="{{ url_for('admin.register_camp') }}" method="GET">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="camp_state_id" class="form-label">State</label>
+                                <select class="form-select" id="camp_state_id" name="state_id" required>
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state.id }}">{{ state.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="camp_city_id" class="form-label">City</label>
+                                <select class="form-select" id="camp_city_id" name="city_id" required>
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-campground me-2"></i>Find Camps
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-body">
+                    <h3 class="card-title text-warning">
+                        <i class="fas fa-shield-alt me-2"></i>Admin Privileges
+                    </h3>
+                    <p class="card-text">Additional administrative capabilities for system management.</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.approvals') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-check me-2"></i>Review Pending Approvals
+                        </a>
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-2"></i>Manage All Users
+                        </a>
+                        <a href="{{ url_for('admin.system_stats') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar me-2"></i>View System Statistics
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usage Guidelines -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Admin Usage Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">When to Use Admin Patient Actions:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Assisting users who need help with the system</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Testing system functionality</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Emergency blood requests on behalf of hospitals</li>
+                                <li><i class="fas fa-check text-success me-2"></i>System demonstrations and training</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Data verification and quality assurance</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">Important Considerations:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Always document admin actions taken</li>
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Respect user privacy and data protection</li>
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Use admin privileges responsibly</li>
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Verify information before making requests</li>
+                                <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>Coordinate with hospitals and camps when needed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load cities for search blood form
+    loadCities('state_id', 'city_id');
+    
+    // Load cities for donate blood form
+    loadCities('donate_state_id', 'donate_city_id');
+    
+    // Load cities for camp registration form
+    loadCities('camp_state_id', 'camp_city_id');
+});
+</script>
+{% endblock %}

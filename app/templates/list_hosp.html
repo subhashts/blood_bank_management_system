@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<!-- Google Font for hospital name -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block title %}Nearby Hospitals{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-danger">
+        <i class="fas fa-hospital-alt me-2"></i>Nearby Hospitals in {{ current_user.city.name }}
+    </h2>
+
+    {% if hospitals and hospitals|length > 0 %}
+        <div class="row">
+            {% for item in hospitals %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        
+                        <!-- Hospital Name -->
+                        <div class="card-header bg-danger text-white text-center py-3" 
+                             style="font-family: 'Montserrat', sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);">
+                            <h5 class="mb-0 fw-bold" style="font-size: 1.35rem;">
+                                <i class="fas fa-hospital me-2"></i>{{ item.hospital.hospital_name }}
+                            </h5>
+                        </div>
+
+                        <!-- Hospital Details -->
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong><i class="fas fa-map-marker-alt me-1 text-danger"></i>Address:</strong>
+                                {{ item.hospital.hospital_address }}
+                            </p>
+                            <p class="mb-3">
+                                <strong><i class="fas fa-phone-alt me-1 text-danger"></i>Contact:</strong>
+                                {{ item.hospital.hospital_contact }}
+                            </p>
+
+                            <!-- Inventory Section -->
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-tint text-danger me-1"></i>Available Blood Inventory:
+                            </h6>
+
+                            {% if item.inventory %}
+                                <div class="row g-2">
+                                    {% for inv in item.inventory %}
+                                        <div class="col-6 col-md-6">
+                                            <div class="p-3 border rounded text-center bg-light">
+                                                <h6 class="mb-1 fw-bold text-danger">{{ inv.blood_group }}</h6>
+                                                <span class="badge bg-primary fs-6">
+                                                    {{ inv.units_available if inv.units_available > 0 else 0 }} units
+                                                </span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted mb-0">No inventory available.</p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center shadow-sm">
+            <i class="fas fa-exclamation-triangle me-2"></i>No hospitals found in your city.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

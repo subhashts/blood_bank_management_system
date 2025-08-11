@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Blood Requests - Blood Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-warning">
+            <i class="fas fa-list me-2"></i>Blood Requests Management
+        </h2>
+        <a href="{{ url_for('hospital.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    {% if requests %}
+        <!-- Filter Tabs -->
+        <ul class="nav nav-tabs mb-4" id="requestTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    <i class="fas fa-clock me-2"></i>Pending Requests
+                    <span class="badge bg-warning ms-2">{{ requests|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="critical-tab" data-bs-toggle="tab" data-bs-target="#critical" type="button" role="tab">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Critical
+                    <span class="badge bg-danger ms-2">{{ requests|selectattr('request_type', 'equalto', 'critical')|selectattr('status', 'equalto', 'pending')|list|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="processed-tab" data-bs-toggle="tab" data-bs-target="#processed" type="button" role="tab">
+                    <i class="fas fa-check me-2"></i>Processed
+                    <span class="badge bg-success ms-2">{{ requests|rejectattr('status', 'equalto', 'pending')|list|length }}</span>
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="requestTabsContent">
+            <!-- Pending Requests -->
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="row">
+                    {% for request in requests %}
+                        {% if request.status == 'pending' %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow-sm border-{% if request.request_type == 'critical' %}danger{% else %}warning{% endif %}">
+                                    <div class="card-header bg-{% if request.request_type == 'critical' %}danger{% else %}warning{% endif %} text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-user me-2"></i>{{ request.patient.name }}
+                                            </h6>
+                                            {% if request.request_type == 'critical' %}
+                                                <span class="badge bg-light text-danger">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>CRITICAL
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Blood Group</small>
+                                                <p class="mb-2">
+                                                    <span class="badge bg-danger">{{ request.blood_group }}</span>
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Units Requested</small>
+                                                <p class="mb-2"><strong>{{ request.units_requested }}</strong></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Request Date</small>
+                                                <p class="mb-2">{{ request.request_date.strftime('%b %d, %Y') }}</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Patient Age</small>
+                                                <p class="mb-2">{{ request.patient.age }} years</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if request.notes %}
+                                            <div class="mb-3">
+                                                <small class="text-muted">Notes</small>
+                                                <p class="mb-0">{{ request.notes }}</p>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="mb-3">
+                                            <small class="text-muted">Contact</small>
+                                            <p class="mb-0">{{ request.patient.email }}</p>
+                                        </div>
+                                        
+                                        <!-- Check Inventory -->
+                                        {% set inventory = request.hospital.blood_inventory|selectattr('blood_group', 'equalto', request.blood_group)|first %}
+                                        {% if inventory and inventory.units_available >= request.units_requested %}
+                                            <div class="alert alert-success py-2">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                <strong>Available:</strong> {{ inventory.units_available }} units in stock
+                                            </div>
+                                            
+                                            <div class="d-flex gap-2">
+                                                <a href="{{ url_for('hospital.approve_request', request_id=request.id) }}" 
+                                                   class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check me-2"></i>Approve Request
+                                                </a>
+                                                <button type="button" class="btn btn-danger btn-sm" 
+                                                        data-bs-toggle="modal" data-bs-target="#rejectModal{{ request.id }}">
+                                                    <i class="fas fa-times me-2"></i>Reject
+                                                </button>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-danger py-2">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Insufficient Stock:</strong> 
+                                                {% if inventory %}
+                                                    Only {{ inventory.units_available }} units available
+                                                {% else %}
+                                                    {{ request.blood_group }} not in stock
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <button type="button" class="btn btn-danger btn-sm" 
+                                                    data-bs-toggle="modal" data-bs-target="#rejectModal{{ request.id }}">
+                                                <i class="fas fa-times me-2"></i>Reject Request
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Reject Blood Request</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST" action="{{ url_for('hospital.reject_request', request_id=request.id) }}">
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reject this blood request from <strong>{{ request.patient.name }}</strong>?</p>
+                                                    <div class="mb-3">
+                                                        <label for="rejection_reason" class="form-label">Reason for Rejection</label>
+                                                        <textarea class="form-control" id="rejection_reason" name="rejection_reason" 
+                                                                  rows="3" placeholder="Please provide a reason for rejection..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger">Reject Request</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if requests|selectattr('status', 'equalto', 'pending')|list|length == 0 %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-muted">No pending requests</h5>
+                        <p class="text-muted">All blood requests have been processed.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Critical Requests -->
+            <div class="tab-pane fade" id="critical" role="tabpanel">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Critical Requests:</strong> These requests require immediate attention.
+                </div>
+                
+                <div class="row">
+                    {% for request in requests %}
+                        {% if request.request_type == 'critical' and request.status == 'pending' %}
+                            <!-- Same card structure as pending, but with critical styling -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="card shadow border-danger">
+                                    <div class="card-header bg-danger text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>{{ request.patient.name }}
+                                            <span class="badge bg-light text-danger ms-2">CRITICAL</span>
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Same content as pending requests -->
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Blood Group</small>
+                                                <p class="mb-2">
+                                                    <span class="badge bg-danger">{{ request.blood_group }}</span>
+                                                </p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Units Requested</small>
+                                                <p class="mb-2"><strong>{{ request.units_requested }}</strong></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-danger py-2">
+                                            <i class="fas fa-clock me-2"></i>
+                                            <strong>Urgent:</strong> This is a critical/emergency request
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ url_for('hospital.approve_request', request_id=request.id) }}" 
+                                               class="btn btn-success">
+                                                <i class="fas fa-check me-2"></i>Approve Now
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Processed Requests -->
+            <div class="tab-pane fade" id="processed" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Blood Group</th>
+                                <th>Units</th>
+                                <th>Type</th>
+                                <th>Request Date</th>
+                                <th>Response Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in requests %}
+                                {% if request.status != 'pending' %}
+                                    <tr>
+                                        <td>{{ request.patient.name }}</td>
+                                        <td><span class="badge bg-danger">{{ request.blood_group }}</span></td>
+                                        <td><strong>{{ request.units_requested }}</strong></td>
+                                        <td>
+                                            <span class="badge bg-{% if request.request_type == 'critical' %}danger{% else %}info{% endif %}">
+                                                {{ request.request_type.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ request.request_date.strftime('%b %d, %Y') }}</td>
+                                        <td>{{ request.response_date.strftime('%b %d, %Y') if request.response_date else '-' }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if request.status == 'approved' %}success{% else %}danger{% endif %}">
+                                                {{ request.status.title() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-list fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No blood requests</h4>
+            <p class="text-muted">Blood requests from patients will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
